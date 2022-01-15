@@ -24,11 +24,24 @@
 
 package chess
 
+import kotlin.math.abs
+
 enum class CurrentTurn { FIRST_PLAYERS_TURN, SECOND_PLAYERS_TURN }
 
 class ChessBoard {
 
     private val chessboard = mutableListOf(
+        mutableListOf(" ", " ", " ", " ", " ", " ", " ", " "), // 0
+        mutableListOf("W", "W", "W", "W", "W", "W", "W", "W"), // 1
+        mutableListOf(" ", " ", " ", " ", " ", " ", " ", " "), // 2
+        mutableListOf(" ", " ", " ", " ", " ", " ", " ", " "), // 3
+        mutableListOf(" ", " ", " ", " ", " ", " ", " ", " "), // 4
+        mutableListOf(" ", " ", " ", " ", " ", " ", " ", " "), // 5
+        mutableListOf("B", "B", "B", "B", "B", "B", "B", "B"), // 6
+        mutableListOf(" ", " ", " ", " ", " ", " ", " ", " ") // 7
+    )
+
+    private val previousChessboardState = mutableListOf(
         mutableListOf(" ", " ", " ", " ", " ", " ", " ", " "), // 0
         mutableListOf("W", "W", "W", "W", "W", "W", "W", "W"), // 1
         mutableListOf(" ", " ", " ", " ", " ", " ", " ", " "), // 2
@@ -64,7 +77,28 @@ class ChessBoard {
         val start = convertPositionToSquare(move.substring(0, 2))
         val destination = convertPositionToSquare(move.substring(2))
 
-        return if (isCorrectMove(start, destination)) {
+        val isCorrectMove = isCorrectMove(start, destination)
+        val isCorrectCapture = isCorrectCapture(start, destination)
+        val isCorrectEnPassant = isCorrectEnPassant(start, destination)
+
+        return if (isCorrectMove
+            || isCorrectCapture
+            || isCorrectEnPassant) {
+
+            for (i in 0 until chessboard.size) {
+                for (j in 0 until chessboard[i].size) {
+                    previousChessboardState[i][j] = chessboard[i][j];
+                }
+            }
+
+            if (isCorrectEnPassant) {
+                if (_currentTurn == CurrentTurn.FIRST_PLAYERS_TURN) {
+                    chessboard[destination.horizontal - 1][destination.vertical] = " "
+                } else {
+                    chessboard[destination.horizontal + 1][destination.vertical] = " "
+                }
+            }
+
             chessboard[destination.horizontal][destination.vertical] =
                 chessboard[start.horizontal][start.vertical]
 
@@ -84,12 +118,12 @@ class ChessBoard {
 
     private fun isCorrectMove(start: Square, destination: Square): Boolean {
         // Blank square
-        if (chessboard[start.horizontal][start.vertical] == " ") {
+        if (isBlankSquare(start)) {
             return false
         }
 
         // The square is taken by another pawn
-        if (chessboard[destination.horizontal][destination.vertical] != " ") {
+        if (!isBlankSquare(destination)) {
             return false
         }
 
@@ -100,7 +134,7 @@ class ChessBoard {
 
         if (_currentTurn == CurrentTurn.FIRST_PLAYERS_TURN) {
             // Not correct color
-            if (chessboard[start.horizontal][start.vertical] == "B") {
+            if (isBlackPawn(start)) {
                 return false
             }
 
@@ -110,13 +144,13 @@ class ChessBoard {
                     return false
                 } else if (start.horizontal != 1) {
                     return false
-                } else if (chessboard[start.horizontal + 1][start.vertical] != " ") {
+                } else if (!isBlankSquare(Square(start.horizontal + 1, start.vertical))) {
                     return false
                 }
             }
         } else {
             // Not correct color
-            if (chessboard[start.horizontal][start.vertical] == "W") {
+            if (isWhitePawn(start)) {
                 return false
             }
 
@@ -126,13 +160,116 @@ class ChessBoard {
                     return false
                 } else if (start.horizontal != 6) {
                     return false
-                } else if (chessboard[start.horizontal - 1][start.vertical] != " ") {
+                } else if (!isBlankSquare(Square(start.horizontal - 1, start.vertical))) {
                     return false
                 }
             }
         }
 
         return true
+    }
+
+    private fun isCorrectCapture(start: Square, destination: Square): Boolean {
+        if (_currentTurn == CurrentTurn.FIRST_PLAYERS_TURN) {
+            // Not correct color
+            if (isBlackPawn(start)) {
+                return false
+            }
+
+            // Blank square
+            if (isBlankSquare(destination) || isWhitePawn(destination)) {
+                return false
+            }
+
+            // Not correct capture
+//            if ((start.horizontal - destination.horizontal) != -1 &&
+//                (abs(start.vertical - destination.vertical) != 1)) {
+//
+//                return false
+//            }
+
+            // Correct capture
+            if ((start.horizontal - destination.horizontal) == -1 &&
+                (abs(start.vertical - destination.vertical) == 1)) {
+
+                return true
+            }
+        } else {
+            // Not correct color
+            if (isWhitePawn(start)) {
+                return false
+            }
+
+            // Blank square
+            if (isBlankSquare(destination) || isBlackPawn(destination)) {
+                return false
+            }
+
+            // Not correct capture
+//            if ((start.horizontal - destination.horizontal) != 1 &&
+//                (abs(start.vertical - destination.vertical) != 1)) {
+//
+//                return false
+//            }
+
+            // Correct capture
+            if ((start.horizontal - destination.horizontal) == 1 &&
+                    (abs(start.vertical - destination.vertical) == 1)) {
+
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private fun isCorrectEnPassant(start: Square, destination: Square): Boolean {
+        // Not blank square
+        if (!isBlankSquare(destination)) {
+            return false
+        }
+
+        if (_currentTurn == CurrentTurn.FIRST_PLAYERS_TURN) {
+            // Not correct color
+            if (isBlackPawn(start)) {
+                return false
+            }
+
+            // En passant
+            if (start.horizontal == 4) {
+                if (start.vertical != 0 && isBlackPawn(Square(start.horizontal, start.vertical - 1))) {
+                    if ((start.horizontal - destination.horizontal) == -1 &&
+                        (start.vertical - destination.vertical) == 1) {
+                        if (destination.horizontal != 0
+                            && previousChessboardState[destination.horizontal - 1][destination.vertical] == " ") {
+
+                            return true
+                        }
+                    }
+                }
+            }
+        } else {
+            // Not correct color
+            if (isWhitePawn(start)) {
+                return false
+            }
+
+            // En passant
+            if (start.horizontal == 3) {
+                if (start.vertical != 7 && isWhitePawn(Square(start.horizontal, start.vertical + 1))) {
+                    if ((start.horizontal - destination.horizontal) == 1 &&
+                        (start.vertical - destination.vertical) == -1) {
+                        if (destination.horizontal != 7
+                            && previousChessboardState[destination.horizontal + 1][destination.vertical] == " ") {
+
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+
+        return false
     }
 
     fun isWhitePawn(position: String): Boolean {
@@ -148,6 +285,8 @@ class ChessBoard {
     private fun isWhitePawn(square: Square) = chessboard[square.horizontal][square.vertical] == "W"
 
     private fun isBlackPawn(square: Square) = chessboard[square.horizontal][square.vertical] == "B"
+
+    private fun isBlankSquare(square: Square) = chessboard[square.horizontal][square.vertical] == " "
 
     private fun convertPositionToSquare(position: String): Square {
         return Square(
@@ -165,7 +304,8 @@ class ChessBoard {
             'e' -> 4
             'f' -> 5
             'g' -> 6
-            else -> 7
+            'h' -> 7
+            else -> -1
         }
     }
 
