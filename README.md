@@ -1,5 +1,5 @@
 # Project: Pawns-Only Chess
-Kotlin Basics Project
+Kotlin Basics Project  
 Hard Difficulty
 
 ## About
