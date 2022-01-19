@@ -181,13 +181,6 @@ class ChessBoard {
                 return false
             }
 
-            // Not correct capture
-//            if ((start.horizontal - destination.horizontal) != -1 &&
-//                (abs(start.vertical - destination.vertical) != 1)) {
-//
-//                return false
-//            }
-
             // Correct capture
             if ((start.horizontal - destination.horizontal) == -1 &&
                 (abs(start.vertical - destination.vertical) == 1)) {
@@ -204,13 +197,6 @@ class ChessBoard {
             if (isBlankSquare(destination) || isBlackPawn(destination)) {
                 return false
             }
-
-            // Not correct capture
-//            if ((start.horizontal - destination.horizontal) != 1 &&
-//                (abs(start.vertical - destination.vertical) != 1)) {
-//
-//                return false
-//            }
 
             // Correct capture
             if ((start.horizontal - destination.horizontal) == 1 &&
@@ -270,6 +256,118 @@ class ChessBoard {
         }
 
         return false
+    }
+
+    fun isWhiteWins(): Boolean {
+        for (i in 0..7) {
+            if (isWhitePawn(Square(7, i))) {
+                return true
+            }
+        }
+
+        for (i in 0..7) {
+            for (j in 0..7) {
+                if (isBlackPawn(Square(i, j))) {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    fun isBlackWins(): Boolean {
+        for (i in 0..7) {
+            if (isBlackPawn(Square(0, i))) {
+                return true
+            }
+        }
+
+        for (i in 0..7) {
+            for (j in 0..7) {
+                if (isWhitePawn(Square(i, j))) {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    fun isStalemate(): Boolean {
+        if (_currentTurn == CurrentTurn.FIRST_PLAYERS_TURN) {
+            for (i in 0..7) {
+                for (j in 0..7) {
+                    val start = Square(i, j)
+
+                    if (isWhitePawn(start)) {
+                        val destinationMove = Square(i + 1, j)
+                        val destinationMove2 = Square(i + 2, j)
+
+                        if (isCorrectMove(start, destinationMove)
+                            || isCorrectMove(start, destinationMove2)) {
+
+                            return false
+                        }
+
+                        if (j != 0) {
+                            val destinationCapture = Square(i + 1, j - 1)
+                            val destinationEnPassant = Square(i + 1, j - 1)
+
+                            if (isCorrectCapture(start, destinationCapture)
+                                || isCorrectEnPassant(start, destinationEnPassant)) {
+
+                                return false
+                            }
+                        }
+
+                        if (j != 7) {
+                            val destinationCapture = Square(i + 1, j + 1)
+                            if (isCorrectCapture(start, destinationCapture)) {
+                                return false
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (i in 0..7) {
+                for (j in 0..7) {
+                    val start = Square(i, j)
+
+                    if (isBlackPawn(start)) {
+                        val destinationMove = Square(i - 1, j)
+                        val destinationMove2 = Square(i - 2, j)
+
+                        if (isCorrectMove(start, destinationMove)
+                            || isCorrectMove(start, destinationMove2)) {
+
+                            return false
+                        }
+
+                        if (j != 0) {
+                            val destinationCapture = Square(i - 1, j - 1)
+                            if (isCorrectCapture(start, destinationCapture)) {
+                                return false
+                            }
+                        }
+
+                        if (j != 7) {
+                            val destinationCapture = Square(i - 1, j + 1)
+                            val destinationEnPassant = Square(i - 1, j + 1)
+
+                            if (isCorrectCapture(start, destinationCapture)
+                                || isCorrectEnPassant(start, destinationEnPassant)) {
+
+                                return false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true
     }
 
     fun isWhitePawn(position: String): Boolean {
@@ -336,6 +434,11 @@ fun main() {
 
     while (usersInput != "exit") {
 
+        if (chessboard.isStalemate()) {
+            println("Stalemate!\nBye!")
+            break
+        }
+
         if (chessboard.currentTurn == CurrentTurn.FIRST_PLAYERS_TURN) {
             println("$firstPlayersName's turn:")
         } else {
@@ -349,10 +452,10 @@ fun main() {
         if (usersInput.matches(regex)) {
             if (chessboard.makeMove(usersInput)) {
                 message = chessboard.getBoard()
-            } else if (chessboard.currentTurn == CurrentTurn.FIRST_PLAYERS_TURN) {
-                if (!chessboard.isWhitePawn(usersInput.substring(0, 2))) {
-                    message = "No white pawn at ${usersInput.substring(0, 2)}"
-                }
+            } else if (chessboard.currentTurn == CurrentTurn.FIRST_PLAYERS_TURN
+                && !chessboard.isWhitePawn(usersInput.substring(0, 2))) {
+
+                message = "No white pawn at ${usersInput.substring(0, 2)}"
             } else if (!chessboard.isBlackPawn(usersInput.substring(0, 2))) {
                 message = "No black pawn at ${usersInput.substring(0, 2)}"
             }
@@ -361,5 +464,15 @@ fun main() {
         }
 
         println(message)
+
+        if (chessboard.isWhiteWins()) {
+            message = "White Wins!\nBye!"
+            println(message)
+            break
+        } else if (chessboard.isBlackWins()) {
+            message = "Black Wins!\nBye!"
+            println(message)
+            break
+        }
     }
 }
