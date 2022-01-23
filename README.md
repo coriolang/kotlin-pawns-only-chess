@@ -8,8 +8,8 @@ Chess is a very popular game, but over time even the classic chess rules may bec
 ## Screenshots
 Below is the input of the names of the players and the output of the chess board.  
 
-[The Pawns-Only Chess in console](/screenshots/1.png)  
+![The Pawns-Only Chess in console](/screenshots/1.png)  
 
 The player moves a pawn.  
 
-[The player moves a pawn](/screenshots/2.png)  
+![The player moves a pawn](/screenshots/2.png)  
