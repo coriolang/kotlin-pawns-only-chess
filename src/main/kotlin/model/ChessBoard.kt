@@ -90,12 +90,12 @@ class ChessBoard : Cloneable {
                         figure.square == start
                     }?.square = destination
 
+                    _gameState = GameState.SECOND_PLAYERS_TURN
+
                     val isWhiteWins = isWhiteWins()
                     if (isWhiteWins) {
                         _gameState = GameState.FIRST_PLAYER_WINS
                     }
-
-                    _gameState = GameState.SECOND_PLAYERS_TURN
 
                     val isStalemate = isStalemate()
                     if (isStalemate) {
@@ -132,12 +132,12 @@ class ChessBoard : Cloneable {
                         figure.square == start
                     }?.square = destination
 
+                    _gameState = GameState.FIRST_PLAYERS_TURN
+
                     val isBlackWins = isBlackWins()
                     if (isBlackWins) {
                         _gameState = GameState.SECOND_PLAYER_WINS
                     }
-
-                    _gameState = GameState.FIRST_PLAYERS_TURN
 
                     val isStalemate = isStalemate()
                     if (isStalemate) {
