@@ -92,14 +92,14 @@ class ChessBoard : Cloneable {
 
                     _gameState = GameState.SECOND_PLAYERS_TURN
 
-                    val isWhiteWins = isWhiteWins()
-                    if (isWhiteWins) {
-                        _gameState = GameState.FIRST_PLAYER_WINS
-                    }
-
                     val isStalemate = isStalemate()
                     if (isStalemate) {
                         _gameState = GameState.STALEMATE
+                    }
+
+                    val isWhiteWins = isWhiteWins()
+                    if (isWhiteWins) {
+                        _gameState = GameState.FIRST_PLAYER_WINS
                     }
                 } else {
                     _gameState = GameState.INVALID_INPUT
@@ -134,14 +134,14 @@ class ChessBoard : Cloneable {
 
                     _gameState = GameState.FIRST_PLAYERS_TURN
 
-                    val isBlackWins = isBlackWins()
-                    if (isBlackWins) {
-                        _gameState = GameState.SECOND_PLAYER_WINS
-                    }
-
                     val isStalemate = isStalemate()
                     if (isStalemate) {
                         _gameState = GameState.STALEMATE
+                    }
+
+                    val isBlackWins = isBlackWins()
+                    if (isBlackWins) {
+                        _gameState = GameState.SECOND_PLAYER_WINS
                     }
                 } else {
                     _gameState = GameState.INVALID_INPUT
